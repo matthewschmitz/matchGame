@@ -6,19 +6,42 @@ var MatchGame = {};
 */
 
 $(document).ready( function() {
-  var cardOrders = MatchGame.generateCardValues();
-  var $ourGame = $('#game');
-  MatchGame.renderCards(cardOrders, $ourGame);
+  var difficulty = 'easy';
+
+  $('.difficultyBtn').on('click', function() {
+    if ($(this).attr('id') === 'easy') {
+      difficulty = 'easy';
+      $(this).css('backgroundColor', 'rgb(51, 204, 51)');
+      $(this).next().css('backgroundColor', 'rgb(32, 64, 86)');
+      $('#counter').remove();
+    } else {
+      difficulty = 'hard';
+      $(this).css('backgroundColor', 'rgb(51, 204, 51)');
+      $(this).prev().css('backgroundColor', 'rgb(32, 64, 86)');
+      $('#counter').remove();
+    }
+
+    var cardOrders = MatchGame.generateCardValues(difficulty);
+    var $ourGame = $('#game');
+    MatchGame.renderCards(cardOrders, $ourGame, difficulty);
+  });
 });
 
 /*
   Generates and returns an array of matching card values.
  */
 
-MatchGame.generateCardValues = function () {
+MatchGame.generateCardValues = function (difficulty) {
   var setOrder = [];
+  var cardCount;
 
-  for (i = 1; i < 9; i++ ) {
+  if (difficulty === 'easy') {
+    cardCount = 8;
+  } else {
+    cardCount = 18;
+  }
+
+  for (i = 1; i < cardCount+1; i++ ) {
     setOrder.push(i);
     setOrder.push(i);
   }
@@ -39,21 +62,39 @@ MatchGame.generateCardValues = function () {
   object.
 */
 
-MatchGame.renderCards = function(cardValues, $game) {
+MatchGame.renderCards = function(cardValues, $game, difficulty) {
 
   $game.data('numberFlippedCards', []);
 
   $game.empty();
 
-  var colours = ['hsl(25, 85%, 65%)', 'hsl(55, 85%, 65%)', 'hsl(90, 85%, 65%)', 'hsl(160, 85%, 65%)', 'hsl(220, 85%, 65%)', 'hsl(265, 85%, 65%)', 'hsl(310, 85%, 65%)', 'hsl(360, 85%, 65%)'];
+  $game.data('clickCounter', 0);
 
-  for (i = 0; i < cardValues.length; i++) {
-    var $card = $('<div class="card col-xs-3"></div>');
-    $card.data('value', cardValues[i]);
-    $card.data('flipped', false);
-    $card.data('color', colours[cardValues[i] - 1]);
-    $game.append($card);
+  var colours = ['hsl(25, 85%, 65%)', 'hsl(55, 85%, 65%)', 'hsl(90, 85%, 65%)', 'hsl(160, 85%, 65%)', 'hsl(220, 85%, 65%)', 'hsl(265, 85%, 65%)', 'hsl(310, 85%, 65%)', 'hsl(360, 85%, 65%)', 'hsl(40, 85%, 65%)', 'hsl(75, 85%, 65%)', 'hsl(140, 85%, 65%)', 'hsl(190, 85%, 65%)', 'hsl(235, 85%, 65%)', 'hsl(290, 85%, 65%)', 'hsl(330, 85%, 65%)', 'hsl(345, 85%, 65%)', 'hsl(120, 85%, 65%)', 'hsl(250, 85%, 65%)'];
+
+
+  if (difficulty === 'easy') {
+    for (i = 0; i < cardValues.length; i++) {
+      var $card = $('<div class="card col-xs-3"></div>');
+      $card.data('value', cardValues[i]);
+      $card.data('flipped', false);
+      $card.data('color', colours[cardValues[i] - 1]);
+      $game.append($card);
+    }
+  } else {
+    for (i = 0; i < cardValues.length; i++) {
+      var $card = $('<div class="card col-xs-2"></div>');
+      $card.data('value', cardValues[i]);
+      $card.data('flipped', false);
+      $card.data('color', colours[cardValues[i] - 1]);
+      $card.css('height', '7rem');
+      $card.css('lineHeight', '7rem');
+      $card.css('fontSize', '3rem');
+      $game.append($card);
+    }
   }
+
+  $('.instructions').append('<p id="counter"><strong>Clicks: </strong>' + $game.data('clickCounter') + '</p>');
 
   $('#game .card').click( function() {
 
@@ -76,6 +117,11 @@ MatchGame.flipCard = function($card, $game) {
     $card.css('background-color', $card.data('color'));
     $card.text($card.data('value'));
     $card.data('flipped', true);
+    var clCount = $game.data('clickCounter');
+    clCount++;
+    $('#counter').remove();
+    $('.instructions').append('<p id="counter"><strong>Clicks: </strong>' + clCount + '</p>');
+    $game.data('clickCounter', clCount);
   }
 
   $game.data('numberFlippedCards').push($card);
